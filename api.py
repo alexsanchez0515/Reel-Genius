@@ -1,5 +1,7 @@
 import requests
 import random
+from PIL import Image
+from io import BytesIO
 
 # const of user token and api url
 API_URL = "https://api.themoviedb.org/3/authentication"
@@ -107,6 +109,11 @@ class Movies:
         url = f"https://api.themoviedb.org/3/search/movie?query={name}"
         response = requests.get(url=url, headers=self.headers)
         return response.json()["results"]
+
+    def get_img(self, movie):
+        url = "https://image.tmdb.org/t/p/w500" + movie["poster_path"]
+        response = requests.get(url=url)
+        return Image.open(BytesIO(response.content))
 
 
 if __name__ == "__main__":
