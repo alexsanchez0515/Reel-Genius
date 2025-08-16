@@ -3,60 +3,76 @@ from api import Movies
 from PIL import Image
 
 
+class Frame(customtkinter.CTkScrollableFrame):
+    def __init__(self, master, **kwargs):
+        super().__init__(master, **kwargs)
+        self.grid_columnconfigure((0), weight=1)
+
+
 class App(customtkinter.CTk):
     def __init__(self) -> None:
         super().__init__()
-        # default
         self.x = 350
         self.y = 650
+        self.title("Reel Genius")
+        self.geometry(
+            f"{self.x}x{self.y}+{self.winfo_screenwidth()-self.x//2}+{self.winfo_screenheight()-self.y//2}")
 
         customtkinter.set_appearance_mode("dark")
         customtkinter.set_default_color_theme("dark-blue")
 
-        self.title("Reel Genius")
-        self.geometry(
-            f"{self.x}x{self.y}+{self.winfo_screenwidth()-self.x//2} + {self.winfo_screenheight()-self.y//2}")
-        self.grid_columnconfigure((0), weight=1)
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=1)
 
-        self.row_index = 0
+        self.frame_ = Frame(self,  width=300, height=600)
+        self.frame_.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
 
-        self.switch = customtkinter.CTkSwitch(
-            self, text="Dark theme", onvalue='on', offvalue='off', command=self.set_theme)
-        self.switch.grid(row=self.row_index, column=0, pady=5)
-        self.row_index += 1
+        widgets = [
+            customtkinter.CTkSwitch(
+                self.frame_, text="Dark theme", onvalue='on', offvalue='off', command=self.set_theme),
+            customtkinter.CTkEntry(
+                self.frame_, width=140, placeholder_text="Film title"),
+            customtkinter.CTkButton(
+                self.frame_, text="Search", command=self.button_event, width=70),
+            customtkinter.CTkLabel(
+                self.frame_, text=None, image=None),
+            customtkinter.CTkLabel(
+                self.frame_, text=None),
+            customtkinter.CTkLabel(
+                self.frame_, text=None),
+            customtkinter.CTkLabel(
+                self.frame_, text=None, wraplength=250),
+            customtkinter.CTkLabel(
+                self.frame_, text=None),
+            customtkinter.CTkSlider(
+                self.frame_, from_=0, to=10, command=self.slider_event, number_of_steps=100),
+            customtkinter.CTkLabel(
+                self.frame_, text=None),
+            customtkinter.CTkButton(
+                self.frame_, text="Rate", command=self.rate_movie, width=70),
+        ]
 
-        self.entry = customtkinter.CTkEntry(
-            self, width=140, placeholder_text="Film title")
-        self.entry.grid(row=self.row_index, column=0, padx=20, pady=5)
-        self.row_index += 1
+        (
+            self.switch,
+            self.entry,
+            self.button_search,
+            self.poster_label,
+            self.title_label,
+            self.release_label,
+            self.overview_label,
+            self.rating_label,
+            self.slider,
+            self.slider_label,
+            self.button_rate,
+        ) = widgets
 
-        self.button = customtkinter.CTkButton(
-            self, text="Search", command=self.button_event, width=70)
-        self.button.grid(row=self.row_index, column=0, pady=3)
-        self.row_index += 1
-
-        self.poster_label = customtkinter.CTkLabel(self, text=None, image=None)
-        self.title_label = customtkinter.CTkLabel(self, text=None)
-        self.release_label = customtkinter.CTkLabel(self, text=None)
-        self.overview_label = customtkinter.CTkLabel(
-            self, text=None, wraplength=250)
-        self.rating_label = customtkinter.CTkLabel(self, text=None)
-        self.slider = customtkinter.CTkSlider(self, from_=0,to=10, command=self.slider_event, number_of_steps=100)
-        self.slider_label = customtkinter.CTkLabel(self, text=None)
-        self.button_rate = customtkinter.CTkButton(
-            self, text="Rate", command=self.rate_movie, width=70)
-
-        for label in [self.poster_label, self.title_label, self.release_label, self.overview_label, self.rating_label]:
-            label.grid(row=self.row_index, column=0, pady=5)
-            self.row_index += 1
-
-        self.slider.grid(row=self.row_index, column=0)
-        self.row_index+=1
-        self.slider_label.grid(row=self.row_index, column=1)
-        self.row_index+=1
-        self.button_rate.grid(row=self.row_index, column=1)
-        self.row_index+=1
-
+        for widget in widgets:
+            if isinstance(widget, customtkinter.CTkButton):
+                widget.grid(sticky="", pady=5, padx=5)
+            elif isinstance(widget, customtkinter.CTkSlider):
+                widget.grid(sticky="", pady=5, padx=5)
+            else:
+                widget.grid(sticky="ew", pady=5, padx=5)
 
     def set_theme(self):
         if self.switch.get() == 'on':
@@ -81,6 +97,8 @@ class App(customtkinter.CTk):
                 size=(200, 300)
             )
 
+            self.slider._value = 5.0
+            self.slider_label.configure(text=self.slider._value)
             self.poster_label.configure(image=poster_img)
             self.poster_label.image = poster_img
             self.title_label.configure(text=f"Title: {first_result['title']}")
@@ -102,10 +120,12 @@ class App(customtkinter.CTk):
             self.rating_label.configure(text="")
 
     def slider_event(self, value):
-            self.slider_label.configure(text=f"{value:.1f}")
-            ...
+        self.slider_label.configure(text=f"{value:.1f}")
+        ...
+
     def rate_movie(self):
         print(f"Movie rated: {self.slider_label._text}")
+
 
 if __name__ == "__main__":
     app = App()
