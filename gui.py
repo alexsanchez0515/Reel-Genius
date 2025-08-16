@@ -2,6 +2,11 @@ import customtkinter
 from api import Movies
 from PIL import Image
 
+class LoginFrame(customtkinter.CTkFrame):
+    def __init__(self, master, **kwargs):
+        super().__init__(master, **kwargs)
+        self.grid_columnconfigure(0, weight=1)
+
 
 class Frame(customtkinter.CTkScrollableFrame):
     def __init__(self, master, **kwargs):
@@ -26,6 +31,8 @@ class App(customtkinter.CTk):
 
         self.frame_ = Frame(self,  width=300, height=600)
         self.frame_.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
+        self.login_frame = LoginFrame(self, width=300, height=100)
+        self.login_frame.grid(row=1, column=0, padx=20, pady=20, sticky="nsew")
 
         widgets = [
             customtkinter.CTkSwitch(
@@ -50,6 +57,14 @@ class App(customtkinter.CTk):
                 self.frame_, text=None),
             customtkinter.CTkButton(
                 self.frame_, text="Rate", command=self.rate_movie, width=70),
+            customtkinter.CTkEntry(
+                self.login_frame, placeholder_text="Username", width=140),
+            customtkinter.CTkEntry(
+                self.login_frame, placeholder_text="Password", width=140),
+            customtkinter.CTkButton(
+                self.login_frame, text="Login", command=self.login, width=70),
+            customtkinter.CTkButton(
+                self.login_frame, text="Sign Up", command=self.signup, width=70),
         ]
 
         (
@@ -64,10 +79,14 @@ class App(customtkinter.CTk):
             self.slider,
             self.slider_label,
             self.button_rate,
+            self.username_entry,
+            self.password_entry,
+            self.button_login,
+            self.button_signup
         ) = widgets
 
         for widget in widgets:
-            if isinstance(widget, customtkinter.CTkButton):
+            if isinstance(widget, customtkinter.CTkButton) or isinstance(widget, customtkinter.CTkEntry):
                 widget.grid(sticky="", pady=5, padx=5)
             elif isinstance(widget, customtkinter.CTkSlider):
                 widget.grid(sticky="", pady=5, padx=5)
@@ -97,7 +116,6 @@ class App(customtkinter.CTk):
                 size=(200, 300)
             )
 
-            self.slider._value = 5.0
             self.slider_label.configure(text=self.slider._value)
             self.poster_label.configure(image=poster_img)
             self.poster_label.image = poster_img
@@ -112,6 +130,7 @@ class App(customtkinter.CTk):
         except IndexError as e:
             print(f"Error: {e}")
             # positioning issue when image disappears
+            self.slider.set(5.0)
             self.poster_label.configure(image=None)
             self.poster_label.image = None
             self.title_label.configure(text="Could not find that movie")
@@ -125,6 +144,12 @@ class App(customtkinter.CTk):
 
     def rate_movie(self):
         print(f"Movie rated: {self.slider_label._text}")
+
+    def login(self):
+        print("Login pressed")
+
+    def signup(self):
+        print("Sign up pressed")
 
 
 if __name__ == "__main__":
