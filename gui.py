@@ -41,10 +41,22 @@ class App(customtkinter.CTk):
         self.overview_label = customtkinter.CTkLabel(
             self, text=None, wraplength=250)
         self.rating_label = customtkinter.CTkLabel(self, text=None)
+        self.slider = customtkinter.CTkSlider(self, from_=0,to=10, command=self.slider_event, number_of_steps=100)
+        self.slider_label = customtkinter.CTkLabel(self, text=None)
+        self.button_rate = customtkinter.CTkButton(
+            self, text="Rate", command=self.rate_movie, width=70)
 
         for label in [self.poster_label, self.title_label, self.release_label, self.overview_label, self.rating_label]:
             label.grid(row=self.row_index, column=0, pady=5)
             self.row_index += 1
+
+        self.slider.grid(row=self.row_index, column=0)
+        self.row_index+=1
+        self.slider_label.grid(row=self.row_index, column=1)
+        self.row_index+=1
+        self.button_rate.grid(row=self.row_index, column=1)
+        self.row_index+=1
+
 
     def set_theme(self):
         if self.switch.get() == 'on':
@@ -89,6 +101,11 @@ class App(customtkinter.CTk):
             self.overview_label.configure(text="")
             self.rating_label.configure(text="")
 
+    def slider_event(self, value):
+            self.slider_label.configure(text=f"{value:.1f}")
+            ...
+    def rate_movie(self):
+        print(f"Movie rated: {self.slider_label._text}")
 
 if __name__ == "__main__":
     app = App()
