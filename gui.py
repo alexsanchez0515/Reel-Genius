@@ -1,6 +1,8 @@
 import customtkinter
 from api import Movies
 from PIL import Image
+import bcrypt
+
 
 class LoginFrame(customtkinter.CTkFrame):
     def __init__(self, master, **kwargs):
@@ -13,6 +15,7 @@ class MovieFrame(customtkinter.CTkScrollableFrame):
         super().__init__(master, **kwargs)
         self.grid_columnconfigure((0), weight=1)
 
+
 class ControlFrame(customtkinter.CTkFrame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
@@ -23,10 +26,11 @@ class App(customtkinter.CTk):
     def __init__(self) -> None:
         super().__init__()
         self.x = 500
-        self.y = 800
+        self.y = 850
         self.title("Reel Genius")
-        self.geometry(
-            f"{self.x}x{self.y}+{self.winfo_screenwidth()-self.x//2}+{self.winfo_screenheight()-self.y//2}")
+        # self.geometry(
+        # f"{self.x}x{self.y}+{self.winfo_screenwidth()-self.x//2}+{self.winfo_screenheight()-self.y//2}")
+        self.geometry(f"{self.x}x{self.y}")
 
         customtkinter.set_appearance_mode("dark")
         customtkinter.set_default_color_theme("dark-blue")
@@ -37,7 +41,8 @@ class App(customtkinter.CTk):
         self.grid_columnconfigure(0, weight=1)
 
         self.control_frame = ControlFrame(self, width=300, height=100)
-        self.control_frame.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
+        self.control_frame.grid(
+            row=0, column=0, padx=10, pady=10, sticky="nsew")
         self.frame_ = MovieFrame(self,  width=300, height=600)
         self.frame_.grid(row=1, column=0, padx=20, pady=20, sticky="nsew")
         self.login_frame = LoginFrame(self, width=300, height=100)
@@ -122,76 +127,52 @@ class App(customtkinter.CTk):
         app_api = Movies()
         movie_name = self.entry.get()
         results = app_api.search(movie_name)
+        movie_list = results[:5]
 
         for widget in self.frame_.winfo_children():
             widget.destroy()
 
-        for index, movie in enumerate(results[:8]):
+        for index, movie in enumerate(movie_list):
             movie_frame = customtkinter.CTkFrame(self.frame_)
-            movie_frame.grid(row=index, column=0, padx=10, pady=10, sticky="ew")
+            movie_frame.grid(row=index, column=0, padx=10,
+                             pady=10, sticky="ew")
+            movie_id = movie['id']
 
             poster_img = customtkinter.CTkImage(
                 dark_image=app_api.get_img(movie=movie),
                 light_image=app_api.get_img(movie=movie),
-                size=(100, 150)
+                size=(133, 200)
             )
 
-            poster_label = customtkinter.CTkLabel(movie_frame, image=poster_img, text="")
+            poster_label = customtkinter.CTkLabel(
+                movie_frame, image=poster_img, text="")
             poster_label.image = poster_img
             poster_label.grid(row=0, column=0, rowspan=4, padx=10)
 
             # Title
-            title_label = customtkinter.CTkLabel(movie_frame, text=f"Title: {movie['title']}")
+            title_label = customtkinter.CTkLabel(
+                movie_frame, text=f"Title: {movie['title']}")
             title_label.grid(row=0, column=1, sticky="w")
 
             # Release date
-            release_label = customtkinter.CTkLabel(movie_frame, text=f"Release: {movie['release_date']}")
+            release_label = customtkinter.CTkLabel(
+                movie_frame, text=f"Release: {movie['release_date']}")
             release_label.grid(row=1, column=1, sticky="w")
 
             # Overview
             overview_label = customtkinter.CTkLabel(
-                movie_frame, text=f"Overview: {movie['overview'][:150]}...", wraplength=300
+                movie_frame, text=f"Overview: {movie['overview'][:150]}...", wraplength=250
             )
             overview_label.grid(row=2, column=1, sticky="w")
 
             # Rating
-            rating_label = customtkinter.CTkLabel(movie_frame, text=f"Rating: {movie['vote_average']:.2f}")
+            rating_label = customtkinter.CTkLabel(
+                movie_frame, text=f"Rating: {movie['vote_average']:.2f}")
             rating_label.grid(row=3, column=1, sticky="w")
 
-        '''
-        try:
-            movie_name = self.entry.get()
-            movie = app_api.search(movie_name)
-            first_result = movie[0]
-
-            poster_img = customtkinter.CTkImage(
-                dark_image=app_api.get_img(first_result),
-                light_image=app_api.get_img(first_result),
-                size=(200, 300)
-            )
-
-            self.slider_label.configure(text=self.slider._value)
-            self.poster_label.configure(image=poster_img)
-            self.poster_label.image = poster_img
-            self.title_label.configure(text=f"Title: {first_result['title']}")
-            self.release_label.configure(
-                text=f"Release Date: {first_result['release_date']}")
-            self.overview_label.configure(
-                text=f"Overview: {first_result['overview']}")
-            self.rating_label.configure(
-                text=f"Rating: {first_result['vote_average']:.2f}")
-
-        except IndexError as e:
-            print(f"Error: {e}")
-            # positioning issue when image disappears
-            self.slider.set(5.0)
-            self.poster_label.configure(image=None)
-            self.poster_label.image = None
-            self.title_label.configure(text="Could not find that movie")
-            self.release_label.configure(text="")
-            self.overview_label.configure(text="")
-            self.rating_label.configure(text="")
-        '''
+            select_button = customtkinter.CTkButton(
+                master=movie_frame, text=f"Select", command=lambda m_id=movie_id: self.select_movie(m_id), width=70)
+            select_button.grid(row=4, column=1, sticky="nsew")
 
     def slider_event(self, value) -> None:
         self.slider_label.configure(text=f"{value:.1f}")
@@ -202,10 +183,13 @@ class App(customtkinter.CTk):
 
     def login(self) -> None:
         print("Login pressed")
-        print(f"Username: {self.username_entry.get()}")
-        print(f"Password: {self.password_entry.get()}")
+        username = self.username_entry.get()
+        password = self.password_entry.get()
 
+        hash = bcrypt()
 
+    def select_movie(self, id):
+        print(f"Movie selected: {id}")
 
 
 if __name__ == "__main__":
