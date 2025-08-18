@@ -110,6 +110,11 @@ class Movies:
         response = requests.get(url=url, headers=self.headers)
         return response.json()["results"]
 
+    def find_by_id(self, id):
+        url = f"https://api.themoviedb.org/3/movie/{id}?language=en-US"
+        response = requests.get(url=url, headers=self.headers)
+        return response.json()
+
     def get_img(self, movie):
         url = "https://image.tmdb.org/t/p/w500" + movie["poster_path"]
         response = requests.get(url=url)
