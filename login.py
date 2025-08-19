@@ -2,6 +2,8 @@ import bcrypt
 import sqlite3
 from os import PathLike
 from pathlib import Path
+import re
+import string
 
 
 class LoginDB:
@@ -51,18 +53,33 @@ class LoginAuthUtil:
     def __init__(self):
         self.salt = bcrypt.gensalt()
 
+    # checks the format of the email
+    def is_email(self, email: str) -> bool:
+        valid = re.match(
+            r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', email)
+        return True if valid else False
+
+    # checks the format of the password
+    def is_password(self, pw: str) -> bool:
+        if not (8 <= len(pw) <= 100):
+            return False
+        if not any(c.islower() for c in pw):
+            return False
+        if not any(c.isupper() for c in pw):
+            return False
+        if not any(c.isdigit() for c in pw):
+            return False
+        if not any(c in string.punctuation for c in pw):
+            return False
+        return True
+
+    # hashes passed pw string
     def hash(self, pw: str):
         bytes = pw.encode('utf-8')
-        hashed_pw = bcrypt.hashpw(password=bytes, salt=self.salt)
+        hashed_pw = bcrypt.hashpw(
+            password=bytes, salt=self.salt).decode('utf-8')
         return hashed_pw
 
 
 if __name__ == "__main__":
     login = LoginAuthUtil()
-    password = "R33s5jnm!!"
-    other_password = "R33s5jnm!"
-
-    new_password = login.hash(pw=password)
-    other_password = login.hash(pw=other_password)
-    print(f"{new_password}")
-    print(f"{other_password}")
