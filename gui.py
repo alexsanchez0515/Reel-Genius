@@ -83,6 +83,8 @@ class App(customtkinter.CTk):
                 self.login_frame, placeholder_text="Password", width=140, show="*"),
             customtkinter.CTkButton(
                 self.login_frame, text="Login", command=self.login, width=70),
+            customtkinter.CTkButton(
+                self.login_frame, text="Sign Up", command=self.login, width=70),
             customtkinter.CTkCheckBox(
                 self.login_frame, text="Remember me", command=None)
         ]
@@ -99,6 +101,7 @@ class App(customtkinter.CTk):
             self.username_entry,
             self.password_entry,
             self.button_login,
+            self.button_signup,
             self.remember_check
         ) = widgets
 
@@ -185,6 +188,7 @@ class App(customtkinter.CTk):
         for widget in frame.winfo_children():
             widget.destroy()
 
+        # brings scroll to top of frame to view selected movie
         frame._parent_canvas.yview_moveto(0)
 
         movie_frame = customtkinter.CTkFrame(frame)
